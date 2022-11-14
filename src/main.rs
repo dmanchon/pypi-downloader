@@ -115,7 +115,7 @@ async fn list_packages(url: &String, base_path: &str) -> Result<Vec<String>> {
     Ok(result)
 }
 
-async fn download_pkg(pkg: Package, base_path: &str) -> Result<()> {
+async fn download_pkg(pkg: Package, base_path: String) -> Result<()> {
     let path = format!("{}/{}", base_path, pkg.file_name);
 
     if std::path::Path::new(&path).is_file() {
@@ -143,7 +143,8 @@ async fn main() {
     let str_path = std::env::args().nth(2).clone().expect("'path' param missing");
     let relpath = std::path::PathBuf::from(str_path);
     let path = relpath.as_path().to_string_lossy();
-
+    let mut tasks = Vec::new();
+    
     match list_packages(&url, &path).await {
         Err(e) => print!("Fail to parse simple pypi: {:#?}", e),
         Ok(list) => {
@@ -152,9 +153,8 @@ async fn main() {
                     Ok(urls) => {
                         for pkg in urls {
                             println!("Downloading {} ...", pkg.url);
-                            if let Err(e) = download_pkg(pkg, &path).await {
-                                println!("Failed to download package: {}", e);
-                            }
+                            let task = tokio::spawn(download_pkg(pkg, path.to_string()));
+                            tasks.push(task);
                         }
                     }
                     Err(e) => println!("Fail to list package versions: {:#?}", e),
@@ -162,4 +162,12 @@ async fn main() {
             }
         }
     }
+
+    // wait for all
+    for task in tasks {
+        if let Err(e) = task.await {
+            println!("Failed to download package: {}", e);
+        }
+    }
+    
 }
