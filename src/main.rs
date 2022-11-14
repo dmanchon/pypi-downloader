@@ -44,11 +44,17 @@ async fn list_versions(url: String, base_url: &String) -> Result<Vec<Package>> {
                     .get("href")
                 {
                     if let Some(href) = att {
-                        let pkg_url = format!("{}{}", base_url, href.as_utf8_str());
+                        // a bit insane but we need to be able to handle both relative and absolute urls
+                        let href_str = std::str::from_utf8(href.as_bytes()).context("fail to parse into '&str'")?;
+                        let options = reqwest::Url::options();
+                        let server = reqwest::Url::parse(&base_url)?;
+                        let base = options.base_url(Some(&server));
+                        let url = base.parse(href_str).context("fail to parse url")?;
+                        
                         let name = tag.inner_text(parser);
                         result.push(Package {
                             file_name: name.to_string(),
-                            url: pkg_url.to_string(),
+                            url: url.to_string(),
                         });
                     }
                 }
