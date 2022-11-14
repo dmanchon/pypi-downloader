@@ -16,10 +16,13 @@ impl fmt::Display for Package {
     }
 }
 
+
 async fn list_versions(url: String, base_url: &String) -> Result<Vec<Package>> {
     let mut result = Vec::new();
 
-    let body = reqwest::Client::new()
+    let body = reqwest::Client::builder()
+        .build()
+        .context("creating client")?
         .get(&url)
         .send()
         .await
@@ -74,7 +77,9 @@ async fn list_packages(url: &String, base_path: &str) -> Result<Vec<String>> {
     let body = match fs::read_to_string(&path).await {
         Ok(content) => content,
         Err(_) => {
-            let content = reqwest::Client::new()
+            let content = reqwest::Client::builder()
+                .build()
+                .context("creating client")?
                 .get(u)
                 .send()
                 .await
@@ -121,7 +126,9 @@ async fn download_pkg(pkg: Package, base_path: String) -> Result<()> {
     if std::path::Path::new(&path).is_file() {
         println!("{:#?} already exists. Skipping.", pkg);
     } else {
-        let content = reqwest::Client::new()
+        let content = reqwest::Client::builder()
+            .build()
+            .context("creating client")?
             .get(pkg.url)
             .send()
             .await

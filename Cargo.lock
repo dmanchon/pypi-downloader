@@ -549,6 +549,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pypi_downloader"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "futures",
+ "reqwest",
+ "tl",
+ "tokio",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -610,17 +621,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
-]
-
-[[package]]
-name = "rust_playground"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "futures",
- "reqwest",
- "tl",
- "tokio",
 ]
 
 [[package]]
